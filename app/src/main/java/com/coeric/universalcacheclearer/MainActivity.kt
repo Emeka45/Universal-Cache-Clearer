@@ -1,9 +1,7 @@
 package com.coeric.universalcacheclearer
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.provider.Settings
 import android.view.Gravity
 import android.view.ViewGroup
@@ -24,7 +22,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         buildUi()
-        refresh()
+        clearOwnCacheOnOpen()
     }
 
     private fun buildUi() {
@@ -33,7 +31,6 @@ class MainActivity : AppCompatActivity() {
             setPadding(28, 36, 28, 24)
             setBackgroundColor(ContextCompat.getColor(context, android.R.color.white))
         }
-
         val title = TextView(this).apply {
             text = "Universal Cache Clearer"
             textSize = 27f
@@ -43,14 +40,14 @@ class MainActivity : AppCompatActivity() {
         root.addView(title, lp(WRAP, 58))
 
         val subtitle = TextView(this).apply {
-            text = "Clean safely. See what is taking space."
+            text = "Automatic cache cleaning"
             textSize = 16f
             setTextColor(0xFF625F66.toInt())
         }
         root.addView(subtitle, lp(WRAP, 46))
 
         cacheSize = TextView(this).apply {
-            text = "Calculating…"
+            text = "Cleaning…"
             textSize = 42f
             gravity = Gravity.CENTER
             setTextColor(0xFF6750A4.toInt())
@@ -59,60 +56,52 @@ class MainActivity : AppCompatActivity() {
         root.addView(cacheSize, LinearLayout.LayoutParams(-1, 120))
 
         status = TextView(this).apply {
-            text = "App cache"
+            text = "Clearing cache…"
             textSize = 15f
             gravity = Gravity.CENTER
             setTextColor(0xFF625F66.toInt())
         }
         root.addView(status, lp(WRAP, 40))
 
-        progress = ProgressBar(this).apply { visibility = ProgressBar.GONE }
+        progress = ProgressBar(this).apply { visibility = ProgressBar.VISIBLE }
         root.addView(progress, LinearLayout.LayoutParams(-1, 40))
 
         val clear = Button(this).apply {
-            text = "CLEAR MY CACHE"
+            text = "CLEAR AGAIN"
             isAllCaps = false
-            setOnClickListener { clearOwnCache() }
+            setOnClickListener { clearOwnCacheOnOpen() }
         }
         root.addView(clear, lp(WRAP, 58))
 
         val manage = Button(this).apply {
-            text = "MANAGE APP CACHES"
+            text = "MANAGE DEVICE STORAGE"
             isAllCaps = false
             setOnClickListener { openStorageSettings() }
         }
         root.addView(manage, lp(WRAP, 58))
 
         val info = TextView(this).apply {
-            text = "Android protects other apps' private data. For system-wide cache cleanup, this app takes you to Android's storage manager rather than using unsafe or hidden APIs."
+            text = "Universal Cache Clearer automatically clears its own temporary cache whenever it opens. Android does not allow ordinary apps to silently erase other apps' private caches, so device-wide cleanup is handled through Android's storage manager."
             textSize = 13f
             setPadding(8, 24, 8, 0)
             setTextColor(0xFF706D73.toInt())
         }
-        root.addView(info, lp(WRAP, 120))
+        root.addView(info, lp(WRAP, 140))
         setContentView(root)
     }
 
-    private fun refresh() {
+    private fun clearOwnCacheOnOpen() {
         progress.visibility = ProgressBar.VISIBLE
+        cacheSize.text = "Cleaning…"
+        status.text = "Clearing cache automatically"
         thread {
-            val bytes = directorySize(cacheDir)
-            runOnUiThread {
-                progress.visibility = ProgressBar.GONE
-                cacheSize.text = formatBytes(bytes)
-                status.text = "This app's cache"
-            }
-        }
-    }
-
-    private fun clearOwnCache() {
-        progress.visibility = ProgressBar.VISIBLE
-        thread {
+            val before = directorySize(cacheDir)
             cacheDir.listFiles()?.forEach { it.deleteRecursively() }
+            val after = directorySize(cacheDir)
             runOnUiThread {
                 progress.visibility = ProgressBar.GONE
-                cacheSize.text = formatBytes(directorySize(cacheDir))
-                status.text = "Cache cleared successfully"
+                cacheSize.text = formatBytes(before - after)
+                status.text = "Cache cleared automatically"
             }
         }
     }
@@ -134,6 +123,5 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun lp(width: Int, height: Int) = LinearLayout.LayoutParams(width, height).apply { bottomMargin = 10 }
-
     companion object { const val WRAP = ViewGroup.LayoutParams.MATCH_PARENT }
 }
