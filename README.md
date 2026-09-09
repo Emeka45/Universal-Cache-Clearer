@@ -1,19 +1,19 @@
 # Universal Cache Clearer
 
-A lightweight Android utility for safe cache cleanup and storage management.
+A polished Android storage utility built around Android's official cache-management APIs.
 
 ## What it does
 
-- Shows the current cache size of Universal Cache Clearer itself.
-- Clears the app's own cache with one tap.
-- Opens Android's storage manager for system-wide app-cache management.
-- Avoids hidden/root-only APIs and does not touch another app's private data.
-- Targets Android 6.0+ and is suitable for low-resource phones.
+- Uses Android's `ACTION_CLEAR_APP_CACHE` request to ask the operating system to clear app caches across the device when the device exposes that capability.
+- Shows the app's own temporary-cache size.
+- Provides a fallback into Android Storage Settings when the device does not expose the cache-cleanup request.
+- Uses the Universal **U** brand icon and redesigned interface.
+- Never claims to have unrestricted access to other apps' private data.
 
 ## Important Android limitation
 
-Modern Android versions intentionally prevent ordinary third-party apps from silently deleting other applications' private caches. Universal Cache Clearer therefore uses public Android APIs and hands system-wide cleanup to Android's own storage UI instead of pretending it has unrestricted access.
+Android 11+ prevents ordinary apps from directly opening or deleting other apps' private cache directories. Android does, however, provide the official `ACTION_CLEAR_APP_CACHE` system request for asking the operating system to remove app caches. Device/OEM behavior can vary, and Android warns that clearing all app caches may affect battery life. See the Android developer documentation for the current platform behavior.
 
 ## Build
 
-The GitHub Actions workflow builds a debug APK with Java 17 and Gradle 8.10 and publishes the APK as a workflow artifact.
+GitHub Actions builds the debug APK with Java 17 and Gradle 8.10 and uploads it as a workflow artifact.
